@@ -1,8 +1,5 @@
 # FakeGoUp
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/fake_go_up`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+If you need add fake favor's count, you could use this gem。
 
 ## Installation
 
@@ -22,7 +19,42 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+you should init the redis before your app star, like this
+```ruby
+FakeGoUp.redis = $redis #$redis is your redis instance
+```
+
+then, you should define your own voter under `lib/voters`。such as `test_voter.rb`
+each voter should do things as little as possible. each interval`s unit is at least 1 second. 
+it is simple，and it is not parallel !!!
+```ruby
+#lib/voters/test_voter.rb
+class TestVoter < FakeGoUp
+    max_fake_count 20 #max fake count per interval, default is 20
+    interval 1 #seconds per interval
+    def process(item, fake_count)
+        #you should overwrite this func, and item is a active record project
+    end
+end
+```
+
+then you should run a rake per 5-10 times, like this
+```ruby
+#lib/tasks/fake_go_up.rake
+namespace :fake_go_up do
+  task :run => :environment do
+    FakeGoUp.run
+  end
+end
+```
+`FakeGoUp.run` will never stop until all jobs finish. you should run a rake to check if there is new jobs. if there is a running fake_go_up, if will not star a new fake_go_up.
+
+now `TestVoter` provide theses func
+```
+t = TestVoter.new
+TestVoter.remain(t) # => the t`s remain fake count needs to add
+TestVoter.running?(t) # => if the t`s fake_go_up is running? 
+```
 
 ## Development
 
