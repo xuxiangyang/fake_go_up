@@ -25,7 +25,17 @@ module FakeGoUp
 
     def _run
       tasks = FakeGoUp::Task.subclasses.map(&:new)
-      while true
+      running = true
+
+      Signal.trap("TERM") do
+        running = false
+      end
+
+      Signal.trap("QUIT") do
+        running = false
+      end
+
+      while running
         all_finish = true
 
         tasks.each do |task|
