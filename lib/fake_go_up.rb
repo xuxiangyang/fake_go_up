@@ -1,21 +1,26 @@
 require "fake_go_up/version"
 require "fake_go_up/task"
 require "pid_lock"
+Dir["lib/voters/*.rb"].each {|file| load file }
 
 module FakeGoUp
   @@redis = nil
+  DEFAULT_PID_NAME = "FakeGoUp"
 
   class << self
     def redis=(conn)
       @@redis = conn
     end
 
-    def run
-      pid_name = "FakeGoUp"
+    def run(pid_name = DEFAULT_PID_NAME)
       return if PidLock.locked?(pid_name)
       PidLock.lock(pid_name)
       _run
       PidLock.unlock(pid_name)
+    end
+
+    def stop(pid_name = DEFAULT_PID_NAME)
+      PidLock.stop(pid_name)
     end
 
     def _run
