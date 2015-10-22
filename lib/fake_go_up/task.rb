@@ -41,7 +41,11 @@ module FakeGoUp
 
       return unless fake_count > 0
       item = self.class.field_to_item(field)
-      process(item, fake_count)
+      if item.nil?
+        FakeGoUp.redis.hdel(self.class.hash_key, field)
+      else
+        process(item, fake_count)
+      end
     end
 
     def interval
