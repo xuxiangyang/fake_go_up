@@ -4,8 +4,8 @@ module FakeGoUp
     attr_reader :cur_step
 
     MAX_INTERVAL = 24 * 60 * 60
-    @@max_fake_count = 20
-    @@interval = 1
+    @max_fake_count = 20
+    @interval = 1
     @@subclass = []
 
     def initialize
@@ -21,7 +21,7 @@ module FakeGoUp
     end
 
     def go_up
-      return unless self.cur_step % self.interval == 0
+      return unless self.cur_step % self.class.interval == 0
       FakeGoUp.redis.hkeys(self.class.hash_key).each do |field|
         go_up_one_field(field)
       end
@@ -30,7 +30,7 @@ module FakeGoUp
 
     def go_up_one_field(field)
       remain_count = FakeGoUp.redis.hget(self.class.hash_key, field).to_i
-      fake_count = rand(@@max_fake_count)
+      fake_count = rand(self.class.max_fake_count)
       if remain_count < fake_count
         fake_count = remain_count
         FakeGoUp.redis.hdel(self.class.hash_key, field)
@@ -48,23 +48,11 @@ module FakeGoUp
       end
     end
 
-    def interval
-      @@interval
-    end
-
     def next_step
       @cur_step = (@cur_step + 1) % MAX_INTERVAL
     end
 
     class << self
-      def interval(i)
-        @@interval = i
-      end
-
-      def max_fake_count(count)
-        @@max_fake_count = count
-      end
-
       def queue_up(item, count)
         field = item_to_field(item)
         FakeGoUp.redis.hset(self.hash_key, field, count)
@@ -73,6 +61,14 @@ module FakeGoUp
       def remain(item)
         field = item_to_field(item)
         FakeGoUp.redis.hget(self.hash_key, field).to_i
+      end
+
+      def interval
+        @interval
+      end
+
+      def max_fake_count
+        @max_fake_count
       end
 
       def running?(item)

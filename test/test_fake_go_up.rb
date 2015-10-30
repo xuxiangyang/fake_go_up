@@ -10,12 +10,12 @@ class TestFakeGoUp < Test::Unit::TestCase
     FakeGoUp.redis.del(FakeGoUp.redis.keys) if FakeGoUp.redis.keys.any?
   end
   def test_subclass
-    assert_equal [TaskSubclass], FakeGoUp::Task.subclasses
+    assert_equal [TaskSubclass, TaskSubclass2], FakeGoUp::Task.subclasses
   end
 
   def test_class_varibale_set
-    assert_equal 100, TaskSubclass.class_variable_get(:@@max_fake_count)
-    assert_equal 3, TaskSubclass.class_variable_get(:@@interval)
+    assert_equal 100, TaskSubclass.instance_variable_get(:@max_fake_count)
+    assert_equal 3, TaskSubclass.instance_variable_get(:@interval)
   end
 
   def test_queue
@@ -49,11 +49,24 @@ class TestFakeGoUp < Test::Unit::TestCase
     assert_equal 1, t.cur_step
     assert_equal 3, item.count
   end
+
+  def test_subclass_differnt_interval
+    assert TaskSubclass.interval != TaskSubclass2.interval
+  end
 end
 
 class TaskSubclass < FakeGoUp::Task
-  interval 3
-  max_fake_count 100
+  @interval = 3
+  @max_fake_count = 100
+
+  def process(item, fake_count)
+    item.count = fake_count
+  end
+end
+
+class TaskSubclass2 < FakeGoUp::Task
+  @interval = 2
+  @max_fake_count = 100
 
   def process(item, fake_count)
     item.count = fake_count
