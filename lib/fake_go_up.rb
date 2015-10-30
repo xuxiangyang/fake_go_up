@@ -1,5 +1,6 @@
 require "fake_go_up/version"
 require "fake_go_up/task"
+require "fake_go_up/item"
 require "pid_lock"
 Dir["lib/voters/*.rb"].each {|file| load file }
 

@@ -19,7 +19,7 @@ class TestFakeGoUp < Test::Unit::TestCase
   end
 
   def test_queue
-    item = Item.build(1)
+    item = FakeGoUp::Item.create(1)
     TaskSubclass.queue_up(item, 3)
     assert_equal 3, TaskSubclass.remain(item)
     assert_equal true, TaskSubclass.running?(item)
@@ -30,17 +30,17 @@ class TestFakeGoUp < Test::Unit::TestCase
   end
 
   def test_item_to_field
-    item = Item.build(1)
-    assert_equal "Item#1", TaskSubclass.item_to_field(item)
+    item = FakeGoUp::Item.create(1)
+    assert_equal "FakeGoUp::Item#1", TaskSubclass.item_to_field(item)
   end
 
   def test_filed_to_item
-    item = Item.build(1)
-    assert_equal item, TaskSubclass.field_to_item("Item#1")
+    item = FakeGoUp::Item.create(1)
+    assert_equal item, TaskSubclass.field_to_item("FakeGoUp::Item#1")
   end
 
   def test_go_up
-    item = Item.build(2)
+    item = FakeGoUp::Item.create(2)
     TaskSubclass.queue_up(item, 3)
     t = TaskSubclass.new
     assert_equal 0, t.cur_step
@@ -48,28 +48,6 @@ class TestFakeGoUp < Test::Unit::TestCase
     t.go_up
     assert_equal 1, t.cur_step
     assert_equal 3, item.count
-  end
-end
-
-class Item
-  attr_accessor :count
-  @@data = {}
-  def initialize(id)
-    @id = id
-    @count = 0
-  end
-
-  def id
-    @id
-  end
-
-  def self.build(id)
-    @@data[id] = self.new(id)
-    @@data[id]
-  end
-
-  def self.find_by_id(id)
-    @@data[id.to_i]
   end
 end
 
