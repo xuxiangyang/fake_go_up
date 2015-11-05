@@ -36,7 +36,20 @@ class TestFakeGoUp < Test::Unit::TestCase
 
   def test_filed_to_item
     item = FakeGoUp::Item.create(1)
+    item.count = 3
     assert_equal item, TaskSubclass.field_to_item("FakeGoUp::Item#1")
+  end
+
+  def test_filed_to_item_with_restart
+    item = FakeGoUp::Item.create(1)
+    item.count = 3
+
+    FakeGoUp::Item.class_variable_set(:@@instance_collector, {}) #fake restart
+
+    new_item = TaskSubclass.field_to_item("FakeGoUp::Item#1")
+
+    assert_equal item.id, new_item.id
+    assert_equal item.count, new_item.count
   end
 
   def test_go_up
