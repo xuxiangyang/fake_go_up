@@ -25,6 +25,7 @@ module FakeGoUp
       FakeGoUp.redis.hkeys(self.class.hash_key).each do |field|
         go_up_one_field(field)
       end
+    ensure
       self.next_step
     end
 
